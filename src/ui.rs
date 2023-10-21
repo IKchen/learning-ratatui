@@ -1,6 +1,6 @@
 use ratatui::{
     layout::Alignment,
-    style::{Color,Style}
+    style::{Color,Style,Stylize},
     widgets::*
 };
 use crate::{app::App, tui::Frame};
@@ -12,7 +12,7 @@ pub fn render(app:&mut App,f:&mut Frame){
         Counter: {}",
         app.counter))
             .white()
-            .on_blue(),
+            .on_blue()
             .block(
                 Block::default()
                   .title("Counter App")
@@ -21,7 +21,7 @@ pub fn render(app:&mut App,f:&mut Frame){
                   .border_type(BorderType::Rounded),
               )
               .style(Style::default().fg(Color::Yellow))
-              .alignment(Alignment::Center)
+              .alignment(Alignment::Center),
         f.size()
     );
 
