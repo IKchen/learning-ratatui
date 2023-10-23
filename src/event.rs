@@ -32,7 +32,7 @@ impl EventHandler{
         let (sender,receiver)=mpsc::channel();
         let handler={
             let sender =sender.clone();
-            //生成一个线程，这个线程会去循环判断 事件
+            //生成一个事件线程，这个线程会去循环判断 事件，生成事件
             thread::spawn(move||{
                 let mut last_tick=Instant::now();
                 loop{
@@ -59,7 +59,7 @@ impl EventHandler{
         };
         Self { sender, receiver, handler }
     }
-    // 接收下一个事件 从handler 线程中
+    //主线程 接收下一个事件 从handler 线程中
     pub fn next(& self)->Result<Event,std::sync::mpsc::RecvError>{
         Ok(self.receiver.recv()?)
     }
