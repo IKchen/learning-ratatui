@@ -13,6 +13,7 @@ pub mod tui;
 /// Application updater.
 pub mod update;
 
+pub mod error;
 //use anyhow::Result;
 use app::App;
 use event::{Event, EventHandler};
@@ -20,23 +21,8 @@ use ratatui::{backend::CrosstermBackend, Terminal};
 use tui::Tui;
 use update::update;
 use std::{io::Error,sync::mpsc::RecvError};
-//自定义错误类型，来匹配多种错误
-#[derive(Debug)]
-enum MyError{
-    EventError(RecvError),
-    IoError(std::io::Error),
-}
-//实现自定义错误的from trait 转换
-impl From<std::io::Error> for MyError {
-    fn from(error: std::io::Error) -> Self {
-        MyError::IoError(error)
-    }
-}
-impl From<RecvError> for MyError {
-    fn from(error: RecvError) -> Self {
-        MyError::EventError(error)
-    }
-}
+use error::MyError;
+
 fn main() -> Result<(),MyError> {
   // Create an application.
   let mut app = App::new();
