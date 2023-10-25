@@ -16,9 +16,9 @@ pub enum Event{
 use std::{sync::mpsc::{self,RecvError},thread,time::{Duration,Instant},io::Error};
 #[derive(Debug)]
 pub struct EventHandler{
-    // 发送方线程
+    // 发送方
     sender:mpsc::Sender<Event>,
-   // 接收方线程
+   // 接收方
     receiver:mpsc::Receiver<Event>,
     // 事件handler 线程
     handler:thread::JoinHandle<()>,
