@@ -5,7 +5,7 @@ use crossterm::{
   terminal::{self, EnterAlternateScreen, LeaveAlternateScreen},
 };
 
-pub type Frame<'a> = ratatui::Frame<'a, ratatui::backend::CrosstermBackend<std::io::Stdout>>;
+pub type Frame<'a> = ratatui::Frame<'a>;
 pub type CrosstermTerminal = ratatui::Terminal<ratatui::backend::CrosstermBackend<std::io::Stdout>>;
 
 use crate::{app::App, event::EventHandler, ui};

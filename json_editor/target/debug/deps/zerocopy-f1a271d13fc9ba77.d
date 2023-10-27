@@ -1,0 +1,14 @@
+D:\mycode\myrust\mytui\tui_app\json_editor\target\debug\deps\zerocopy-f1a271d13fc9ba77.rmeta: C:\Users\neware.com.cn\.cargo\registry\src\index.crates.io-6f17d22bba15001f\zerocopy-0.7.15\src\lib.rs C:\Users\neware.com.cn\.cargo\registry\src\index.crates.io-6f17d22bba15001f\zerocopy-0.7.15\src\macros.rs C:\Users\neware.com.cn\.cargo\registry\src\index.crates.io-6f17d22bba15001f\zerocopy-0.7.15\src\macro_util.rs C:\Users\neware.com.cn\.cargo\registry\src\index.crates.io-6f17d22bba15001f\zerocopy-0.7.15\src\util.rs C:\Users\neware.com.cn\.cargo\registry\src\index.crates.io-6f17d22bba15001f\zerocopy-0.7.15\src\third_party\rust\layout.rs C:\Users\neware.com.cn\.cargo\registry\src\index.crates.io-6f17d22bba15001f\zerocopy-0.7.15\src\wrappers.rs
+
+D:\mycode\myrust\mytui\tui_app\json_editor\target\debug\deps\libzerocopy-f1a271d13fc9ba77.rlib: C:\Users\neware.com.cn\.cargo\registry\src\index.crates.io-6f17d22bba15001f\zerocopy-0.7.15\src\lib.rs C:\Users\neware.com.cn\.cargo\registry\src\index.crates.io-6f17d22bba15001f\zerocopy-0.7.15\src\macros.rs C:\Users\neware.com.cn\.cargo\registry\src\index.crates.io-6f17d22bba15001f\zerocopy-0.7.15\src\macro_util.rs C:\Users\neware.com.cn\.cargo\registry\src\index.crates.io-6f17d22bba15001f\zerocopy-0.7.15\src\util.rs C:\Users\neware.com.cn\.cargo\registry\src\index.crates.io-6f17d22bba15001f\zerocopy-0.7.15\src\third_party\rust\layout.rs C:\Users\neware.com.cn\.cargo\registry\src\index.crates.io-6f17d22bba15001f\zerocopy-0.7.15\src\wrappers.rs
+
+D:\mycode\myrust\mytui\tui_app\json_editor\target\debug\deps\zerocopy-f1a271d13fc9ba77.d: C:\Users\neware.com.cn\.cargo\registry\src\index.crates.io-6f17d22bba15001f\zerocopy-0.7.15\src\lib.rs C:\Users\neware.com.cn\.cargo\registry\src\index.crates.io-6f17d22bba15001f\zerocopy-0.7.15\src\macros.rs C:\Users\neware.com.cn\.cargo\registry\src\index.crates.io-6f17d22bba15001f\zerocopy-0.7.15\src\macro_util.rs C:\Users\neware.com.cn\.cargo\registry\src\index.crates.io-6f17d22bba15001f\zerocopy-0.7.15\src\util.rs C:\Users\neware.com.cn\.cargo\registry\src\index.crates.io-6f17d22bba15001f\zerocopy-0.7.15\src\third_party\rust\layout.rs C:\Users\neware.com.cn\.cargo\registry\src\index.crates.io-6f17d22bba15001f\zerocopy-0.7.15\src\wrappers.rs
+
+C:\Users\neware.com.cn\.cargo\registry\src\index.crates.io-6f17d22bba15001f\zerocopy-0.7.15\src\lib.rs:
+C:\Users\neware.com.cn\.cargo\registry\src\index.crates.io-6f17d22bba15001f\zerocopy-0.7.15\src\macros.rs:
+C:\Users\neware.com.cn\.cargo\registry\src\index.crates.io-6f17d22bba15001f\zerocopy-0.7.15\src\macro_util.rs:
+C:\Users\neware.com.cn\.cargo\registry\src\index.crates.io-6f17d22bba15001f\zerocopy-0.7.15\src\util.rs:
+C:\Users\neware.com.cn\.cargo\registry\src\index.crates.io-6f17d22bba15001f\zerocopy-0.7.15\src\third_party\rust\layout.rs:
+C:\Users\neware.com.cn\.cargo\registry\src\index.crates.io-6f17d22bba15001f\zerocopy-0.7.15\src\wrappers.rs:
+
+# env-dep:CARGO_PKG_VERSION=0.7.15
