@@ -55,5 +55,9 @@ impl App{
             println!("{}",output);
             Ok(())
     }
+    pub fn translate(&self)->Result<String>{
+        let output=serde_json::to_string(&self.pairs)?;
+        Ok(output)
+    }
 
 }

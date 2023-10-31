@@ -11,14 +11,14 @@ use crate::app::{App,
 use crate::ui::ui;
 fn main()->Result<(), Box<dyn Error>> {
     let backend=CrosstermBackend::new(io::stdout());
-    let terminal=ratatui::Terminal::new(backend);
+    let mut terminal=ratatui::Terminal::new(backend)?;
     enable_raw_mode().expect("启用模式失败");
     crossterm::execute!(io::stdout(),EnterAlternateScreen,EnableMouseCapture);
     println!("nihao ");
-    let app=App::new();
-    let res=run_app(terminal,&app);
+    let mut app=App::new();
+    let res=run_app(&mut terminal,&mut app);
     disable_raw_mode()?;
-    crossterm::execute!(LeaveAlternateScreen,DisableMouseCapture).expect("退出失败");
+    crossterm::execute!(io::stdout(),LeaveAlternateScreen,DisableMouseCapture).expect("退出失败");
     terminal.show_cursor().expect("光标启用失败");
     if let Ok(do_print)=res{
         if do_print{
@@ -31,67 +31,79 @@ fn main()->Result<(), Box<dyn Error>> {
 }
 fn run_app<B:Backend>(terminal: &mut Terminal<B>,app:&mut App)-> io::Result<bool>{
     loop{
-        terminal.draw(|frame|ui(app,frame));
+        terminal.draw(|frame|ui(frame,app))?;
             if let Event::Key(key)=event::read()?{
-      /*   if key.kind=crossterm::event::KeyEventKind::Release{
-
-        } */
+                 if key.kind == event::KeyEventKind::Release {
+                    // 当键盘释放时，保持状态（tab按一次后，保持选中，而不是pressing时才保持选中）
+                    continue;
+                } 
 
              match app.current_screen{
                 CurrentScreen::Main=>{
                     match key.code{
                         KeyCode::Char('q')|KeyCode::Esc=>{app.current_screen=CurrentScreen::Exiting}
-                        KeyCode::Char('e')=>{app.current_screen=CurrentScreen::Editing}
+                        KeyCode::Char('e')=>{app.current_screen=CurrentScreen::Editing;
+                            app.currently_editing = Some(CurrentlyEditing::Key);}//进入编辑屏幕时，给编辑区一个默认值
                     //control+o output json in the terminal
                         KeyCode::Char('o')|KeyCode::Char('O')=>{
                             if key.modifiers==event::KeyModifiers::CONTROL{
-                                app.current_screen=CurrentScreen::Exiting;
+                                app.translate();
                             }
                         }
-                        _=>Ok(())
+                        _=>()
                     }
                 }
                 CurrentScreen::Editing=>{
                     match key.code{
                        
                         KeyCode::Enter=>{
-                            if app.currently_editing=CurrentlyEditing::Key{app.currently_editing=CurrentlyEditing::Value}
-                             else {app.current_screen=CurrentScreen::Main;
-                                    app.save_key_value()
-                                } 
+                            //currently_editing 是option类型, if let some 会排除掉none 情况
+                            if let Some(editing)=&app.currently_editing{
+                                match editing{
+                                    CurrentlyEditing::Key=>{app.currently_editing=Some(CurrentlyEditing::Value)}
+                                    CurrentlyEditing::Value=>{app.current_screen=CurrentScreen::Main;
+                                        app.save_key_value()}
+                                }
+                            }
                         }
                         KeyCode::Tab=>{
-                         if app.currently_editing=CurrentlyEditing::Key{app.currently_editing=CurrentlyEditing::Value}
-                            else {app.currently_editing=CurrentlyEditing::Key;} 
+                            app.toggle_editing();
+                        
                         }
-                        KeyCode::Esc=>{app.current_screen=CurrentScreen::Main;}
+                        KeyCode::Esc=>{app.current_screen=CurrentScreen::Main;app.currently_editing = None;}
                         KeyCode::Char(value)=>{
-                            match app.currently_editing{
-                                CurrentlyEditing::Key=>{app.key_input.push(value)}
-                                CurrentlyEditing::Value=>{app.value_input.push(value)}
-                                _=>Ok(())
+                            if let Some(editing)=&app.currently_editing{
+                                match editing{
+                                    CurrentlyEditing::Key=>{app.key_input.push(value)}
+                                    CurrentlyEditing::Value=>{app.value_input.push(value)}
+                                    _=>()
+                                }
                             }
+                       
                         }
                         //删除编辑区的字符
                         KeyCode::Backspace=>{
-                            match app.currently_editing{
-                                CurrentlyEditing::Key=>{app.key_input.pop()}
-                                CurrentlyEditing::Value=>{app.value_input.pop()}
-                                _=>Ok(())
+                            if let Some(editing)=&app.currently_editing{
+                                match editing{
+                                    CurrentlyEditing::Key=>{app.key_input.pop();}
+                                    CurrentlyEditing::Value=>{app.value_input.pop();}
+                                    _=>()
+                                }
                             }
+                        
                         }
-                        _=>Ok(())
+                        _=>()
                     }
                             
                 }
                 CurrentScreen::Exiting=>{
                     match key.code{
-                        KeyCode::Char('y')=>return true ,
-                        KeyCode::Char('n')=>return false ,
-                        _=>Ok(())
+                        KeyCode::Char('y')=>return Ok(true),
+                        KeyCode::Char('n')=>return Ok(false),
+                        _=>()
                     }
                 }
-                _=>Ok(())
+                _=>()
             }
                
         }
