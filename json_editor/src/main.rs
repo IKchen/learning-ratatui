@@ -100,6 +100,7 @@ fn run_app<B:Backend>(terminal: &mut Terminal<B>,app:&mut App)-> io::Result<bool
                     match key.code{
                         KeyCode::Char('y')=>return Ok(true),
                         KeyCode::Char('n')=>return Ok(false),
+                        KeyCode::Esc=>app.current_screen=CurrentScreen::Main,
                         _=>()
                     }
                 }

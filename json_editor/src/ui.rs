@@ -16,6 +16,7 @@ pub fn ui(f:&mut Frame,app:&App){
         Constraint::Percentage(40),
         Constraint::Percentage(40),
         Constraint::Length(3),
+        Constraint::Min(0),//防止剩余空间都填充给最后一个constraint
     ])
     .split(f.size());
         //顶部标题
@@ -99,6 +100,7 @@ pub fn ui(f:&mut Frame,app:&App){
     if let Some(editing)=&app.currently_editing{
         let editing_screen=Block::default().title("Enter a new key-value pair").borders(Borders::NONE).style(Style::default().bg(Color::DarkGray));
         let area = centered_rect(60, 25, f.size());
+        f.render_widget(Clear, area);//将编辑框置于顶层
         f.render_widget(editing_screen, area);
          //分成2边
         let editing_chunk=Layout::default().direction(Direction::Horizontal)
@@ -106,6 +108,7 @@ pub fn ui(f:&mut Frame,app:&App){
             Constraint::Percentage(50),
             Constraint::Percentage(50),
         ])
+        .margin(1)
         .split(area);
 
         let mut key_block = Block::default().title("Key").borders(Borders::ALL);
