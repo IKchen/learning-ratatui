@@ -1,5 +1,5 @@
 # 一个简单的计数器应用
-![Alt text](image.png)
+# ![Alt text](image-1.png)
 一个基于ratatui 的简单tui应用
 | 文件名| 说明 |
 |------|------|

@@ -2,7 +2,11 @@ use crossterm::event::{
     KeyEvent,MouseEvent,
     self,Event as CrosstermEvent
 };
-#[derive(Clone,Copy,Debug)]
+use tokio::{
+    sync::mpsc::{self,UnboundedReceiver, UnboundedSender},
+    task::JoinHandle,
+};
+#[derive(Clone,Copy,Debug,Serialize, Deserialize)]
 pub enum Event{
     //时间
     Tick,
@@ -12,21 +16,30 @@ pub enum Event{
     Mouse(MouseEvent),
     //重置窗口大小
     Resize(u16,u16),
+    Init,//初始化
+    Quit,
+    Error,
+    Closed,
+    Render,
+    FocusGained,
+    FocusLost,
+    Paste(String),
+
 }
-use std::{sync::mpsc::{self,RecvError},thread,time::{Duration,Instant},io::Error};
+use std::{time::{Duration,Instant},io::Error};
 #[derive(Debug)]
 pub struct EventHandler{
     // 发送方
-    sender:mpsc::Sender<Event>,
+   pub event_tx:mpsc::UnboundedSender,
    // 接收方
-    receiver:mpsc::Receiver<Event>,
-    // 事件handler 线程
-    handler:thread::JoinHandle<()>,
+   pub event_rx:mpsc::UnboundedReceiver,
+    // 事件任务 handler 线程
+    pub task:tokio::JoinHandle<()>,
 
 }
-impl EventHandler{
+/* impl EventHandler{
     //构造 event handler 实例
-    pub fn new(tick_rate:u64)->Self{
+    pub fn new(tick_rate:f64,frame_rate:f64)->Self{
         let tick_rate=Duration::from_millis(tick_rate);
         //生成通道
         let (sender,receiver)=mpsc::channel();
@@ -64,19 +77,80 @@ impl EventHandler{
         Ok(self.receiver.recv()?)
     }
     
-}
+} */
 
-#[cfg(test)]
-mod tests{
-    use super::*;
-    use std::{thread,time};
-    #[test]
-     fn test_timeout(){
-   let mut last_tick=Instant::now();
-   let tick_rate=time::Duration::from_millis(1000);
-   loop{ 
-    let timeout=tick_rate.checked_sub(last_tick.elapsed()).unwrap_or(tick_rate);
-    assert_eq!(timeout.as_millis(),1000);
+impl EventHandler{
+    pub fn new(tick_delay:std::time::Duration,render_delay:std::time::Duration,cancellation_token:CancellationToken)->Self{
+        let (event_tx,event_rx)=tokio::sync::mpsc::unbounded_channel();
+        let sender=event_tx.clone();//原始备份，避免event_tx的所有权移动到线程中
+        let task=tokio::spawn(async move{
+            let mut reader= crossterm::event::EventStream::new();
+              //创建定时器，每个指定时间间隔触发一次
+            let mut tick_interval = tokio::time::interval(tick_delay);
+            let mut render_interval = tokio::time::interval(render_delay);
+            //发送初始化事件
+            sender.send(Event::Init).unwrap();
+            loop{  
+              //创建定时器，每个指定时间间隔触发一次
+              let tick_delay = tick_interval.tick();
+              let render_delay = render_interval.tick();
+              //fuse（）自动实现fusefuture ,避免重复轮询，reader 从 crossterm 事件流中读取事件
+              let crossterm_event = reader.next().fuse();
+              //异步执行以下事件
+              tokio::select!{
+                //token失效后，退出
+                _ = cancellation_token.cancelled() => {
+                  break;
+                }
+                //匹配 事件流类型
+                maybe_event = crossterm_event => {
+                  match maybe_event {
+                    Some(Ok(evt)) => {
+                      match evt {
+                        CrosstermEvent::Key(key) => {
+                          if key.kind == KeyEventKind::Press {
+                            sender.send(Event::Key(key)).unwrap();
+                          }
+                        },
+                        CrosstermEvent::Mouse(mouse) => {
+                            sender.send(Event::Mouse(mouse)).unwrap();
+                        },
+                        CrosstermEvent::Resize(x, y) => {
+                            sender.send(Event::Resize(x, y)).unwrap();
+                        },
+                        CrosstermEvent::FocusLost => {
+                            sender.send(Event::FocusLost).unwrap();
+                        },
+                        CrosstermEvent::FocusGained => {
+                            sender.send(Event::FocusGained).unwrap();
+                        },
+                        CrosstermEvent::Paste(s) => {
+                            sender.send(Event::Paste(s)).unwrap();
+                        },
+                      }
+                    }
+                    Some(Err(_)) => {
+                        sender.send(Event::Error).unwrap();
+                    }
+                    None => {},
+                  }
+                },
+                _ = tick_delay => {
+                    sender.send(Event::Tick).unwrap();
+                },
+                _ = render_delay => {
+                    sender.send(Event::Render).unwrap();
+                },
+              }
+    
+            }
+          
+          }
+    
+          );
+          {task,event_tx,event_rx}
     }
+    pub async fn next(& self)->Option<Event>{
+        self.event_rx.recv().await
     }
 }

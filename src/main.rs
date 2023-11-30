@@ -22,7 +22,7 @@ use tui::Tui;
 use update::update;
 use std::{io::Error,sync::mpsc::RecvError};
 use error::MyError;
-
+/* 
 async fn tokio_main()->Result<()>{
   let mut app = App::new();
   app.run().await?;
@@ -35,4 +35,10 @@ if let Err(e)=tokio_main.await{
   eprintln!("{} error: Something went wrong", env!("CARGO_PKG_NAME"));
   Err(e)
 } else{Ok(())}
+} */
+#[tokio::main]
+async fn main()->Result<(),MyError>{
+  let mut app = App::new();
+  app.run().await?;
+  Ok(())
 }
