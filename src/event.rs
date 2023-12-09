@@ -1,12 +1,15 @@
 use crossterm::event::{
-    KeyEvent,MouseEvent,
-    self,Event as CrosstermEvent
+    KeyEvent,MouseEvent,KeyEventKind,
+    self,Event as CrosstermEvent,EventStream
 };
 use tokio::{
     sync::mpsc::{self,UnboundedReceiver, UnboundedSender},
-    task::JoinHandle,
+    task,
 };
-#[derive(Clone,Copy,Debug,Serialize, Deserialize)]
+use serde::{Deserialize, Serialize};
+use tokio_util::sync::CancellationToken;
+use futures::{FutureExt, StreamExt};
+#[derive(Clone,Debug)]
 pub enum Event{
     //时间
     Tick,
@@ -27,14 +30,16 @@ pub enum Event{
 
 }
 use std::{time::{Duration,Instant},io::Error};
+use futures::Stream;
+
 #[derive(Debug)]
 pub struct EventHandler{
     // 发送方
-   pub event_tx:mpsc::UnboundedSender,
+   pub event_tx:mpsc::UnboundedSender<Event>,
    // 接收方
-   pub event_rx:mpsc::UnboundedReceiver,
+   pub event_rx:mpsc::UnboundedReceiver<Event>,
     // 事件任务 handler 线程
-    pub task:tokio::JoinHandle<()>,
+    pub task: task::JoinHandle<()>,
 
 }
 /* impl EventHandler{
@@ -80,24 +85,28 @@ pub struct EventHandler{
 } */
 
 impl EventHandler{
-    pub fn new(tick_delay:std::time::Duration,render_delay:std::time::Duration,cancellation_token:CancellationToken)->Self{
+    pub fn new()->Self{
         let (event_tx,event_rx)=tokio::sync::mpsc::unbounded_channel();
-        let sender=event_tx.clone();//原始备份，避免event_tx的所有权移动到线程中
+        let task = tokio::spawn(async {});
+        Self{event_tx,event_rx,task}
+    }
+    pub fn run(& mut self,tick_delay:std::time::Duration,render_delay:std::time::Duration,cancellation_token:CancellationToken){
+        let sender=self.event_tx.clone();//原始备份，避免event_tx的所有权移动到线程中
         let task=tokio::spawn(async move{
             let mut reader= crossterm::event::EventStream::new();
-              //创建定时器，每个指定时间间隔触发一次
+            //创建定时器，每个指定时间间隔触发一次
             let mut tick_interval = tokio::time::interval(tick_delay);
             let mut render_interval = tokio::time::interval(render_delay);
             //发送初始化事件
             sender.send(Event::Init).unwrap();
-            loop{  
-              //创建定时器，每个指定时间间隔触发一次
-              let tick_delay = tick_interval.tick();
-              let render_delay = render_interval.tick();
-              //fuse（）自动实现fusefuture ,避免重复轮询，reader 从 crossterm 事件流中读取事件
-              let crossterm_event = reader.next().fuse();
-              //异步执行以下事件
-              tokio::select!{
+            loop{
+                //创建定时器，每个指定时间间隔触发一次
+                let tick_delay = tick_interval.tick();
+                let render_delay = render_interval.tick();
+                //fuse（）自动实现fusefuture ,避免重复轮询，reader 从 crossterm 事件流中读取事件
+                let crossterm_event = reader.next().fuse();
+                //异步执行以下事件
+                tokio::select!{
                 //token失效后，退出
                 _ = cancellation_token.cancelled() => {
                   break;
@@ -142,15 +151,14 @@ impl EventHandler{
                     sender.send(Event::Render).unwrap();
                 },
               }
-    
+
             }
-          
-          }
-    
-          );
-          {task,event_tx,event_rx}
+
+        }
+
+        );
     }
-    pub async fn next(& self)->Option<Event>{
+    pub async fn next(& mut self)->Option<crate::event::Event>{
         self.event_rx.recv().await
     }
 }

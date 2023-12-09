@@ -1,10 +1,13 @@
 use ratatui::layout::Rect;
 use tokio::sync::mpsc::UnboundedSender;
-
+use color_eyre::eyre::Result;
+use crossterm::event::{KeyEvent, MouseEvent};
 use crate::{
   action::Action,
   config::Config,
-  tui::{Event, Frame},
+  tui::{Frame},
+  event::Event,
+  error::MyError,
 };
 
 pub mod home;
@@ -13,14 +16,14 @@ pub mod fps;
 //// ANCHOR: component
 pub trait Component {
   #[allow(unused_variables)]
-  fn register_action_handler(&mut self, tx: UnboundedSender<Action>) -> Result<()> {
+  fn register_action_handler(&mut self, tx: UnboundedSender<Action>) -> Result<(),MyError> {
     Ok(())
   }
   #[allow(unused_variables)]
-  fn register_config_handler(&mut self, config: Config) -> Result<()> {
+  fn register_config_handler(&mut self, config: Config) -> Result<(),MyError> {
     Ok(())
   }
-  fn init(&mut self) -> Result<()> {
+  fn init(&mut self) -> Result<(),MyError> {
     Ok(())
   }
   fn handle_events(&mut self, event: Option<Event>) -> Result<Option<Action>> {

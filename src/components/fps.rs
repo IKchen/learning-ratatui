@@ -12,6 +12,7 @@ pub enum Ticker {
   RenderTick,
 }
 
+
 #[derive(Debug, Clone, PartialEq)]
 pub struct FpsCounter {
   app_start_time: Instant,
@@ -43,7 +44,8 @@ impl FpsCounter {
 
   fn app_tick(&mut self) -> Result<()> {
     self.app_frames += 1;
-    let now = Instant::now();
+    let  now = Instant::now();
+
     let elapsed = (now - self.app_start_time).as_secs_f64();
     if elapsed >= 1.0 {
       self.app_fps = self.app_frames as f64 / elapsed;

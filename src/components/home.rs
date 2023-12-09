@@ -10,6 +10,7 @@ use tui_input::{backend::crossterm::EventHandler, Input};
 
 use super::{Component, Frame};
 use crate::{action::Action, config::key_event_to_string};
+use crate::error::MyError;
 
 #[derive(Default, Copy, Clone, PartialEq, Eq)]
 pub enum Mode {
@@ -88,7 +89,7 @@ impl Home {
 }
 
 impl Component for Home {
-  fn register_action_handler(&mut self, tx: UnboundedSender<Action>) -> Result<()> {
+  fn register_action_handler(&mut self, tx: UnboundedSender<Action>) -> Result<(),MyError> {
     self.action_tx = Some(tx);
     Ok(())
   }
